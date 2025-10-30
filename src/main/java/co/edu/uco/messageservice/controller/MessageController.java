@@ -39,7 +39,7 @@ public class MessageController {
 
     @DeleteMapping("/{code}")
     public ResponseEntity<Message> deleteMessage(@PathVariable String code) {
-        var msg = MessageCatalog.remove(code);
-        return new ResponseEntity<>(msg, (msg == null) ? HttpStatus.NOT_FOUND : HttpStatus.ACCEPTED);
+        var removed = MessageCatalog.remove(code);
+        return new ResponseEntity<>(removed, (removed == null) ? HttpStatus.NOT_FOUND : HttpStatus.ACCEPTED);
     }
 }
