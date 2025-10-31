@@ -3,6 +3,7 @@ package co.edu.uco.messageservice.controller;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +17,7 @@ import co.edu.uco.messageservice.catalog.Message;
 import co.edu.uco.messageservice.catalog.MessageCatalog;
 
 @RestController
-@RequestMapping("/messages/api/v1/messages")
+@RequestMapping(value = "/messages/api/v1/messages", produces = MediaType.APPLICATION_JSON_VALUE)
 public class MessageController {
 
     @GetMapping("/{code}")
@@ -30,7 +31,7 @@ public class MessageController {
         return new ResponseEntity<>(MessageCatalog.getAll(), HttpStatus.ACCEPTED);
     }
 
-    @PutMapping("/{code}")
+    @PutMapping(value = "/{code}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Message> upsertMessage(@PathVariable String code, @RequestBody Message message) {
         message.setCode(code);
         MessageCatalog.upsert(message);
