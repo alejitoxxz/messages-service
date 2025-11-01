@@ -6,18 +6,21 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Centralized catalog for system messages. Uses a {@link ConcurrentHashMap} to allow
- * concurrent access for read/write operations while keeping registration logic in a
- * single place. Messages are indexed by a unique code.
+ * Centralized catalog for system messages.
+ * Uses a {@link ConcurrentHashMap} to allow concurrent access for read/write operations
+ * while keeping registration logic in a single place.
+ * Messages are indexed by a unique code.
+ *
+ * This service contains ONLY message definitions — no parameter catalog entries.
  */
 public final class MessageCatalog {
 
     private static final Map<String, Message> MESSAGES = new ConcurrentHashMap<>();
 
     static {
-        // ==========================
-        // EXCEPCIONES GENERALES
-        // ==========================
+        // =========================================================
+        // ⚙️ EXCEPCIONES GENERALES
+        // =========================================================
         register("exception.general.unexpected",
             "Unexpected exception occurred while processing the request.",
             "Ocurrió un error inesperado. Por favor, intente nuevamente más tarde.",
@@ -33,14 +36,15 @@ public final class MessageCatalog {
             "Los datos ingresados no son válidos.",
             "Error de validación detectado.");
 
-        // ==========================
-        // REGISTRO DE USUARIOS
-        // ==========================
+        // =========================================================
+        // 👤 REGISTRO DE USUARIOS
+        // =========================================================
         register("register.user.success",
             "User registered successfully in database.",
             "Usuario registrado correctamente.",
             "El proceso de registro finalizó con éxito.");
 
+        // --- Validaciones obligatorias ---
         register("register.user.validation.idtype.required",
             "Missing required field: identification type.",
             "El tipo de identificación es obligatorio.",
@@ -76,14 +80,30 @@ public final class MessageCatalog {
             "El número de teléfono debe contener exactamente 10 dígitos.",
             "El teléfono no cumple la longitud esperada.");
 
+        // --- Reglas de negocio ---
         register("register.user.rule.duplicated",
             "Duplicate user detected with same ID type and number.",
             "Ya existe un usuario registrado con esta identificación.",
             "El usuario ya se encuentra en el sistema.");
 
-        // ==========================
-        // AUTENTICACIÓN
-        // ==========================
+        register("register.user.identification.duplicated",
+            "Duplicate user detected with the same identification type and number.",
+            "Ya existe un usuario registrado con el mismo tipo y número de identificación.",
+            "El sistema detectó un usuario duplicado con los mismos datos de identificación.");
+
+        register("register.user.email.duplicated",
+            "Duplicate email detected while attempting to register a user.",
+            "El correo electrónico ya está registrado.",
+            "El usuario ingresó un correo que ya está en uso.");
+
+        register("register.user.phone.duplicated",
+            "Duplicate phone number detected while attempting to register a user.",
+            "El número de teléfono ya está registrado.",
+            "El usuario ingresó un número que ya está en uso.");
+
+        // =========================================================
+        // 🔐 AUTENTICACIÓN
+        // =========================================================
         register("auth.login.failed",
             "Invalid credentials provided during authentication.",
             "Usuario o contraseña incorrectos.",
@@ -99,14 +119,9 @@ public final class MessageCatalog {
             "No tiene permisos para acceder a este recurso.",
             "Acceso restringido según las políticas del sistema.");
 
-        // ==========================
-        // CATÁLOGOS / PARÁMETROS
-        // ==========================
-        register("catalog.parameter.notfound",
-            "Parameter key not found in catalog map.",
-            "No se encontró el parámetro solicitado.",
-            "Clave del parámetro inexistente.");
-
+        // =========================================================
+        // 📩 MENSAJES DEL CATÁLOGO
+        // =========================================================
         register("catalog.message.updated",
             "Message successfully updated in catalog map.",
             "Mensaje actualizado correctamente.",
@@ -123,27 +138,39 @@ public final class MessageCatalog {
     }
 
     /**
-     * Registers a new message in the catalog. If a message already exists for the provided
-     * code, it will be replaced.
+     * Registers a new message in the catalog. If a message already exists
+     * for the provided code, it will be replaced.
      */
     private static void register(String code, String technical, String user, String general) {
         MESSAGES.put(code, new Message(code, technical, user, general));
     }
 
+    /**
+     * Retrieves a message by its code.
+     */
     public static Message get(String code) {
         return MESSAGES.get(code);
     }
 
+    /**
+     * Returns an unmodifiable view of all messages.
+     */
     public static Map<String, Message> getAll() {
         return Collections.unmodifiableMap(MESSAGES);
     }
 
+    /**
+     * Inserts or updates a message in the catalog.
+     */
     public static void upsert(Message message) {
         Objects.requireNonNull(message, "message");
         Objects.requireNonNull(message.getCode(), "message.code");
         MESSAGES.put(message.getCode(), message);
     }
 
+    /**
+     * Removes a message from the catalog by its code.
+     */
     public static Message remove(String code) {
         return MESSAGES.remove(code);
     }

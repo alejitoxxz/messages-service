@@ -1,17 +1,8 @@
 package co.edu.uco.messageservice.controller;
 
 import java.util.Map;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
 
 import co.edu.uco.messageservice.catalog.Message;
 import co.edu.uco.messageservice.catalog.MessageCatalog;
@@ -23,24 +14,30 @@ public class MessageController {
     @GetMapping("/{code}")
     public ResponseEntity<Message> getMessage(@PathVariable String code) {
         var msg = MessageCatalog.get(code);
-        return new ResponseEntity<>(msg, (msg == null) ? HttpStatus.NOT_FOUND : HttpStatus.ACCEPTED);
+        if (msg == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(msg); // ✅ AHORA DEVUELVE 200 OK
     }
 
     @GetMapping
     public ResponseEntity<Map<String, Message>> getAllMessages() {
-        return new ResponseEntity<>(MessageCatalog.getAll(), HttpStatus.ACCEPTED);
+        return ResponseEntity.ok(MessageCatalog.getAll()); // ✅ también 200 OK
     }
 
     @PutMapping(value = "/{code}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Message> upsertMessage(@PathVariable String code, @RequestBody Message message) {
         message.setCode(code);
         MessageCatalog.upsert(message);
-        return new ResponseEntity<>(message, HttpStatus.ACCEPTED);
+        return ResponseEntity.ok(message); // ✅ también 200 OK
     }
 
     @DeleteMapping("/{code}")
     public ResponseEntity<Message> deleteMessage(@PathVariable String code) {
         var removed = MessageCatalog.remove(code);
-        return new ResponseEntity<>(removed, (removed == null) ? HttpStatus.NOT_FOUND : HttpStatus.ACCEPTED);
+        if (removed == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(removed); // ✅ también 200 OK
     }
 }
